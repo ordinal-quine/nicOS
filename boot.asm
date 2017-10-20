@@ -6,8 +6,7 @@
 MBOOT_PAGE_ALIGN    equ 1<<0    ; Load kernel and modules on a page boundary
 MBOOT_MEM_INFO      equ 1<<1    ; Provide your kernel with memory info
 MBOOT_HEADER_MAGIC  equ 0x1BADB002 ; Multiboot Magic value
-; NOTE: We do not use MBOOT_AOUT_KLUDGE. It means that GRUB does not
-; pass us a symbol table.
+; NOTE: Not using MBOOT_AOUT_KLUDGE. GRUB does not pass a symbol table.
 MBOOT_HEADER_FLAGS  equ MBOOT_PAGE_ALIGN | MBOOT_MEM_INFO
 MBOOT_CHECKSUM      equ -(MBOOT_HEADER_MAGIC + MBOOT_HEADER_FLAGS)
 
@@ -50,7 +49,7 @@ gdt_flush:
     mov ss, ax
     jmp 0x08:flush2   ; 0x08 is the offset to our code segment: Far jump!
 flush2:
-    ret               ; Returns back to the C code!
+    ret               ; Returns back to the C code
 	
 global idt_load
 extern idtp
@@ -215,7 +214,7 @@ isr_common_stub:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, esp   ; Push us the stack
+    mov eax, esp   ; Push to stack
     push eax
     mov eax, fault_handler
     call eax       ; A special call, preserves the 'eip' register
@@ -272,8 +271,8 @@ make_irq 15
 
 extern irq_handler
 
-; This is a stub that we have created for IRQ based ISRs. This calls
-; '_irq_handler' in our C code. We need to create this in an 'irq.c'
+; This is a stub that was created for IRQ based ISRs. This calls
+; '_irq_handler' in C code. Create in 'irq.c'
 irq_common_stub:
     pusha
     push ds

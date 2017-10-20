@@ -32,8 +32,8 @@ echo linking...
 i686-elf-gcc -T linker.ld -o os_image.bin -ffreestanding -O2 -nostdlib boot.o kernel.o fat.o shell.o kbd.o timer.o irq.o isr.o idt.o gdt.o error.o vga.o common.o screencontroller.o -lgcc -std=gnu99 -Wno-unused-parameter
 copy os_image.bin boot 2>NUL 1>NUL
 cd boot 2>NUL 1>NUL
-del CodeOSKernel 2>NUL 1>NUL
-rename "os_image.bin" "CodeOSKernel" 2>NUL 1>NUL
+del nicOSKernel 2>NUL 1>NUL
+rename "os_image.bin" "nicOSKernel" 2>NUL 1>NUL
 cd .. 2>NUL 1>NUL
 if exist "os_image.bin" (
 	COLOR 02

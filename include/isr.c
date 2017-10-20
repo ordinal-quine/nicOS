@@ -100,11 +100,6 @@ void isrs_install(){
     idt_set_gate(31, (unsigned)isr31, 0x08, 0x8E);
 }
 
-void fault_handler(struct regs *r)
-{
-    /* Is this a fault whose number is from 0 to 31? */
-    if (r->int_no < 32)
-    {
-        bsodmsg(exception_messages[r->int_no]);
-    }
-}
+void fault_handler(struct regs *r) {
+    if (r->int_no < 32) bsodmsg(exception_messages[r->int_no]);
+}//end fault_handler()

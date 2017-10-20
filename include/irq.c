@@ -19,13 +19,11 @@ void *irq_routines[16] ={
     0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0
 };
-void irq_install_handler(int irq, void (*handler)(struct regs *r)){
-    irq_routines[irq] = handler;
-}
-void irq_uninstall_handler(int irq){
-    irq_routines[irq] = 0;
-}
-void irq_remap(void){
+void irq_install_handler(int irq, void (*handler)(struct regs *r)){ irq_routines[irq] = handler; }
+
+void irq_uninstall_handler(int irq) { irq_routines[irq] = 0; }
+
+void irq_remap(void) {
     outb(0x20, 0x11);
     outb(0xA0, 0x11);
     outb(0x21, 0x20);
@@ -36,8 +34,9 @@ void irq_remap(void){
     outb(0xA1, 0x01);
     outb(0x21, 0x0);
     outb(0xA1, 0x0);
-}
-void irq_install(){
+}//end irq_remap()
+
+void irq_install() {
     irq_remap();
 	idt_set_gate(32, (unsigned)irq0, 0x08, 0x8E);
 	idt_set_gate(33, (unsigned)irq1, 0x08, 0x8E);
@@ -55,29 +54,17 @@ void irq_install(){
 	idt_set_gate(45, (unsigned)irq13, 0x08, 0x8E);
 	idt_set_gate(46, (unsigned)irq14, 0x08, 0x8E);
 	idt_set_gate(47, (unsigned)irq15, 0x08, 0x8E);
-}
-void irq_handler(struct regs *r){
-    /* This is a blank function pointer */
+}//end irq_install()
+
+void irq_handler(struct regs *r) {
+
     void (*handler)(struct regs *r);
 
-    /* Find out if we have a custom handler to run for this
-    *  IRQ, and then finally, run it */
     handler = irq_routines[r->int_no - 32];
-    if (handler)
-    {
-        handler(r);
-    }
+    if (handler) handler(r);
 
-    /* If the IDT entry that was invoked was greater than 40
-    *  (meaning IRQ8 - 15), then we need to send an EOI to
-    *  the slave controller */
-    if (r->int_no >= 40)
-    {
-        outb(0xA0, 0x20);
-    }
+    if (r->int_no >= 40) outb(0xA0, 0x20);
 
-    /* In either case, we need to send an EOI to the master
-    *  interrupt controller too */
     outb(0x20, 0x20);
-}
+}//end irq_handler()
 	

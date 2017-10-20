@@ -15,7 +15,7 @@ void gdt_set_gate(int num, unsigned long base, unsigned long limit, unsigned cha
 
     gdt[num].granularity |= (gran & 0xF0);
     gdt[num].access = access;
-}
+}//end gdt_set_gate()
 
 void gdt_install(){
     gp.limit = (sizeof(struct gdt_entry) * 3) - 1;
@@ -28,4 +28,4 @@ void gdt_install(){
     gdt_set_gate(2, 0, 0xFFFFFFFF, 0x92, 0xCF);
 
     gdt_flush();
-}
+}//end gdt_install()

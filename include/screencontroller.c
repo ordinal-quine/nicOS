@@ -1,42 +1,32 @@
 #include "screencontroller.h"
 u8int color = 0x0f;
 
-void setcolor(u8int c){
-	color = c;
-}
+void setcolor(u8int c) { color = c; }
 
-void print(string s){
-	printf(s,color);
-}
+void print(string s) { printf(s,color); }
 
-void println(string s){
+void println(string s) {
 	printf(s,color);
 	printf("\n",color);
-}
+}//end println()
 
-void printnum(int num){
-	printInt(num,color);
-}
+void printnum(int num) { printInt(num,color); }
 
-void cls(){
-	clear_screen(color);
-}
+void cls() { clear_screen(color); }
 
-void printchar(char c){
-	putchar(c,color);
-}
+void printchar(char c) { putchar(c,color); }
 
-void colorRestOfScreen(){
+void colorRestOfScreen() {
 	char *vidmem = (char *)0xb8000;
 	int position = getPos();
 	while(position < 80*25*2){
 		position++;
 		vidmem[position] = color;
 		position++;
-	}
-}
+	}//end while
+}//end colorRestOfScreen()
 
-void printhex(int n){
+void printhex(int n) {
 	s32int tmp;
 
     print("0x");
@@ -44,34 +34,22 @@ void printhex(int n){
     char noZeroes = 1;
 
     int i;
-    for (i = 28; i > 0; i -= 4)
-    {
+    for (i = 28; i > 0; i -= 4) {
         tmp = (n >> i) & 0xF;
-        if (tmp == 0 && noZeroes != 0)
-        {
-            continue;
-        }
+        if (tmp == 0 && noZeroes != 0) continue;
     
-        if (tmp >= 0xA)
-        {
+        if (tmp >= 0xA) {
             noZeroes = 0;
             printchar(tmp-0xA+'a');
-        }
-        else
-        {
+        }//end if
+        else {
             noZeroes = 0;
             printchar(tmp+'0');
-        }
-    }
+        }//end else
+    }//end for
   
     tmp = n & 0xF;
-    if (tmp >= 0xA)
-    {
-        printchar(tmp-0xA+'a');
-    }
-    else
-    {
-        printchar(tmp+'0');
-    }
+    if (tmp >= 0xA) printchar(tmp-0xA+'a');
+    else printchar(tmp+'0');
 
-}
+}//end printhex()

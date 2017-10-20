@@ -74,42 +74,35 @@ unsigned char kbdus[256] = {
 
 int shift = 0;
 
-void pause(){
+void pause() {
 	int i = 0;
-	while(i < 100000000){
-		i++;
-	}
-	while(inb(0x60) & 0x80){
-		
-	};
-}
+	while(i < 100000000) i++;
+	while(inb(0x60) & 0x80) { };
+}//end pause()
+
 void keyboard_handler(struct regs *r){
     unsigned char scancode;
 	
     scancode = inb(0x60);
 	
-    if (scancode & 0x80)
-    {
-		if(scancode == 0xAA)
-			shift = 0;
-    }
-    else
-    {
+    if (scancode & 0x80) {
+		if(scancode == 0xAA) shift = 0;
+    }//end if
+    else {
 		if(scancode == 0x2a){shift = 1;return;}
 		if(scancode == 0x1c){shell_enterpressed();return;}
 		if(scancode == 0x0e){
-			if(shell_can_backspace()){
-				printchar(kbdus[scancode]);
-			}
+			if(shell_can_backspace()) printchar(kbdus[scancode]);
 			shell_backspace();
 			return;
-		}
+		}//end if
 		if(shift){
 			printchar(kbdus[scancode+90]);
 			shell_addchar(kbdus[scancode+90]);
-		}else{
+		}//end if
+		else {
 			printchar(kbdus[scancode]);
 			shell_addchar(kbdus[scancode]);
-		}
-    }
-}
+		}//end else
+    }//end else
+}//end keyboard_handler()

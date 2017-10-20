@@ -24,7 +24,7 @@ int main(){
 	cls();
 	init_shell();
 	return 0xDEADBABA;
-}
+}//end main()
 
 void startscreen(){
 	cls();
@@ -55,4 +55,4 @@ void startscreen(){
 	while(inb(0x60) & 0x80){};
 	setcolor(0x0f);
 	cls();
-}
+}//end startscreen()

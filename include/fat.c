@@ -1,49 +1,43 @@
 #include "fat.h"
-void listFiles(int disk, int addr, int len){
+void listFiles(int disk, int addr, int len) {
 	int listed = 0;
-	for(int s = 0; s < len; s++){
+	for(int s = 0; s < len; s++) {
 		preparedisk(disk,addr+s);
 		unsigned char sect[512];
 		for(int i = 0; i < 255; i++){
 			u16int tmpword = (u16int)inw(0x1F0);
 			sect[i*2] = ((unsigned char)(tmpword));
 			sect[i*2+1] = ((unsigned char)(tmpword >> 8));
-		}
-		for(int i = 0; i < 512; i+=32){
+		}//end for
+		for(int i = 0; i < 512; i+=32) {
 			if(sect[i+11] != 0x0f && sect[i] != 0xe5 && sect[i+11] != 0x08 && sect[i] != 0){
 				if(listed == 23){
 					println("Press any key to continue...");
 					pause();
 					listed = 0;
-				}
+				}//end if
 				listed++;
-				for(int j = 0; j < 11; j++){
-					if(sect[i+j] != 0x20){
-						printchar(sect[i+j]);
-					}
-					if(j == 7 && (sect[i+11] >> 4) != 0x1){
-						printchar('.');
-					}
-				}
-				if((sect[i+11] >> 4) == 0x1){
-					print(" <DIR>");
-				}
+				for (int j = 0; j < 11; j++){
+					if(sect[i+j] != 0x20) printchar(sect[i+j]);
+					if(j == 7 && (sect[i+11] >> 4) != 0x1) printchar('.');
+				}//end for
+				if((sect[i+11] >> 4) == 0x1) print(" <DIR>");
 				println("");
-			}
-		}
-	}
-}
+			}//end if
+		}//end for
+	}//end for2
+}//end listFiles()
 
-int isDir(int disk, int addr, int len, string name){
+int isDir(int disk, int addr, int len, string name) {
 	string namebuf = "             ";
-	for(int s = 0; s < len; s++){
+	for(int s = 0; s < len; s++) {
 		preparedisk(disk,addr+s);
 		unsigned char sect[512];
 		for(int i = 0; i < 255; i++){
 			u16int tmpword = (u16int)inw(0x1F0);
 			sect[i*2] = ((unsigned char)(tmpword));
 			sect[i*2+1] = ((unsigned char)(tmpword >> 8));
-		}
+		}//end for
 		for(int i = 0; i < 512; i+=32){
 			if(sect[i+11] != 0x0f && sect[i] != 0xe5 && sect[i+11] != 0x08){
 				int k = 0;
@@ -51,37 +45,35 @@ int isDir(int disk, int addr, int len, string name){
 					if(sect[i+j] != 0x20){
 						namebuf[k] = sect[i+j];
 						k++;
-					}
+					}//end if
 					if(j == 7 && (sect[i+11] >> 4) != 0x1){
 						namebuf[k] = '.';
 						k++;
-					}
-				}
+					}//end if
+				}//end for
 				namebuf[k] = '\0';
 				strtolower(name,name);
 				strtolower(namebuf,namebuf);
-				if(strcmp(namebuf,name) && (sect[i+11] >> 4) == 0x1){
-					return 1;
-				}
-			}
-		}
-	}
+				if(strcmp(namebuf,name) && (sect[i+11] >> 4) == 0x1) return 1;
+			}//end if
+		}//end for
+	}//end for
 	return 0;
-}
+}//end isDir()
 
-int getFile(int disk, int addr, int len, string name){
+int getFile(int disk, int addr, int len, string name) {
 	int spc = getClusterSize(disk);
 	int re = getRootEntries(disk);
 	int root = getRoot(disk);
 	string namebuf = "             ";
-	for(int s = 0; s < len; s++){
+	for(int s = 0; s < len; s++) {
 		preparedisk(disk,addr+s);
 		unsigned char sect[512];
 		for(int i = 0; i < 255; i++){
 			u16int tmpword = (u16int)inw(0x1F0);
 			sect[i*2] = ((unsigned char)(tmpword));
 			sect[i*2+1] = ((unsigned char)(tmpword >> 8));
-		}
+		}//end for
 		for(int i = 0; i < 512; i+=32){
 			if(sect[i+11] != 0x0f && sect[i] != 0xe5 && sect[i+11] != 0x08){
 				int k = 0;
@@ -89,27 +81,25 @@ int getFile(int disk, int addr, int len, string name){
 					if(sect[i+j] != 0x20){
 						namebuf[k] = sect[i+j];
 						k++;
-					}
+					}//end if
 					if(j == 7 && (sect[i+11] >> 4) != 0x1){
 						namebuf[k] = '.';
 						k++;
-					}
-				}
+					}//end if
+				}//end for
 				namebuf[k] = '\0';
 				strtolower(name,name);
 				strtolower(namebuf,namebuf);
 				if(strcmp(name,namebuf)){
 					int cluster = (((int)sect[i+27] << 8)+sect[i+26])-2;
-					if(cluster < 0){
-						return getRoot(disk);
-					}
+					if(cluster < 0) return getRoot(disk);
 					return (spc*cluster)+root+((re*32)/512);
-				}
-			}
-		}
-	}
+				}//end if
+			}//end if
+		}//end for
+	}//end for
 	return -1;
-}
+}//end getFile()
 
 int getRoot(int disk){
 	int pos = getFirstPart(disk);
@@ -119,41 +109,31 @@ int getRoot(int disk){
 	int size = 0;
 	for(int i = 0; i < 255; i++){
 		u16int tmpword = (u16int)inw(0x1F0);
-		if(i == 0x7){
-			rsects = (char)(tmpword);
-		}
-		if(i == 0x8){
-			fats = (char)(tmpword);
-		}
-		if(i == 0xb){
-			size = tmpword;
-		}
-	}
+		if(i == 0x7) rsects = (char)(tmpword);
+		if(i == 0x8) fats = (char)(tmpword);
+		if(i == 0xb) size = tmpword;
+	}//end for
 	return fats*size+rsects+pos;
-}
+}//end getRoot()
 
 int getFirstPart(int disk){
 	preparedisk(disk,0);
 	u16int pos = 0;
 	for(int i = 0; i <= 255; i++){
 		u16int tmpword = (u16int)inw(0x1F0);
-		if(i == 227){
-			pos = tmpword;
-		}
-	}
+		if(i == 227) pos = tmpword;
+	}//end for()
 	return pos;
-}
+}//end getFirstPart()
 
-int getClusterSize(int disk){
+int getClusterSize(int disk) {
 	preparedisk(disk,getFirstPart(disk));
 	for(int i = 0; i < 255; i++){
 		u16int tmpword = (u16int)inw(0x1F0);
-		if(i == 0x6){
-			return (unsigned char)tmpword;
-		}
-	}
+		if(i == 0x6) return (unsigned char)tmpword;
+	}//end for
 	return -1;
-}
+}//end getClusterSize()
 
 int getRootEntries(int disk){
 	preparedisk(disk,getFirstPart(disk));
@@ -161,15 +141,11 @@ int getRootEntries(int disk){
 	int b = 0;
 	for(int i = 0; i < 255; i++){
 		u16int tmpword = (u16int)inw(0x1F0);
-		if(i == 0x8){
-			a = tmpword >> 8;
-		}
-		if(i == 0x9){
-			b = tmpword << 8;
-		}
-	}
+		if(i == 0x8) a = tmpword >> 8;
+		if(i == 0x9) b = tmpword << 8;
+	}//end for
 	return a+b;
-}
+}//end getRootEntries()
 
 int getDirLength(int disk, int addr){
 	int len = 1;
@@ -180,34 +156,22 @@ int getDirLength(int disk, int addr){
 			u16int tmpword = (u16int)inw(0x1F0);
 			sect[i*2] = ((unsigned char)(tmpword));
 			sect[i*2+1] = ((unsigned char)(tmpword >> 8));
-		}
+		}//end for
 		int entriesGood = 16;
 		int allzero = 0;
 		for(int i = 0; i < 512; i+=32){
-			if(i > 0 && sect[i] == (unsigned char)'.' && sect[i+11] == 0x10){
-				return len;
-			}
-			if(sect[i+11] != 0x0f){
-				if(((sect[i+11] & ( 1 << 6 )) >> 6) == 1){
-					entriesGood--;
-				}
-			}
+			if(i > 0 && sect[i] == (unsigned char)'.' && sect[i+11] == 0x10) return len;
+			if(sect[i+11] != 0x0f) {
+				if(((sect[i+11] & ( 1 << 6 )) >> 6) == 1) entriesGood--;
+			}//end if
 			if(sect[i+11] == (unsigned char)0){
-				if(sect[i+12] != (unsigned char)0 && sect[i+10] != (unsigned char)0){
-					entriesGood--;
-				}
-				else if(sect[i+12] == (unsigned char)0 && sect[i+10] == (unsigned char)0){
-					allzero++;	
-				}
-			}
-		}
-		if(entriesGood < 16){
-			return len;
-		}
-		if(allzero >= 15){
-			return len;
-		}
+				if(sect[i+12] != (unsigned char)0 && sect[i+10] != (unsigned char)0) entriesGood--;
+				else if(sect[i+12] == (unsigned char)0 && sect[i+10] == (unsigned char)0) allzero++;	
+			}//end if
+		}//end for
+		if(entriesGood < 16) return len;
+		if(allzero >= 15) return len;
 		len++;
-	}
+	}//end while
 	return len;
-}
+}//end getDirLength()
